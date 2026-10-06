@@ -1,0 +1,25 @@
+# Binaries
+music-player
+music-player.exe
+/bin/
+/dist/
+
+# Go build cache / test cache
+*.test
+*.out
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local music (keep folder, ignore tracks)
+music/*.mp3
+music/*.wav
+music/*.flac
+music/*.ogg
+music/*.m4a
+!music/.gitkeep
