@@ -1,38 +1,35 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"github.com/gopxl/beep"
-	"github.com/gopxl/beep/mp3"
-	"github.com/gopxl/beep/speaker"
+	"music-player/internal"
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatal("usage: music-player <file.mp3>")
+		log.Fatal("usage: music-player <file.mp3|file.wav|file.flac|file.ogg>")
 	}
 
-	f, err := os.Open(os.Args[1])
-	if err != nil {
+	p := internal.New()
+	if err := p.PlayFile(os.Args[1]); err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
+	fmt.Println("Playing:", os.Args[1])
 
-	streamer, format, err := mp3.Decode(f)
-	if err != nil {
-		log.Fatal(err)
+	tick := time.NewTicker(time.Second)
+	defer tick.Stop()
+	done := p.Done()
+	for {
+		select {
+		case <-done:
+			return
+		case t := <-tick.C:
+			_ = t
+			fmt.Println(p.Position().Round(time.Second), "/", p.Len().Round(time.Second))
+		}
 	}
-	defer streamer.Close()
-
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-
-	done := make(chan bool)
-
-	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
-		done <- true
-	})))
-	<-done
 }
